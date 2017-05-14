@@ -29,7 +29,7 @@ Then browse [http://localhost:8000](http://localhost:8000).
 
 ~~~ sh
 cd code/
-sbt run
+sbt server/run
 ~~~
 
 Then browse [http://localhost:9000](http://localhost:9000).
