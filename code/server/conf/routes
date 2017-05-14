@@ -1,0 +1,4 @@
+GET    /                         counter.CounterCtl.index
+POST   /communication/*path      counter.CounterCtl.communication(path)
+
+GET    /asset/*file              controllers.Assets.versioned(path = "/public", file: Asset)

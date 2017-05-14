@@ -1,7 +1,39 @@
 name := "counter"
 
-scalaVersion := "2.11.8"
+scalaVersion in ThisBuild := "2.11.8"
 
-enablePlugins(PlayScala)
+val shared =
+  crossProject
+    .crossType(CrossType.Pure)
+    .settings(
+      libraryDependencies ++= Seq(
+        "com.lihaoyi" %%% "autowire" % "0.2.6",
+        "com.lihaoyi" %%% "upickle" % "0.4.3"
+      )
+    )
 
-libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
+val sharedJS = shared.js
+val sharedJVM = shared.jvm
+
+val client =
+  project
+    .dependsOn(sharedJS)
+    .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
+    .settings(
+      libraryDependencies ++= Seq(
+        "org.scala-js" %%% "scalajs-dom" % "0.9.2",
+        "in.nvilla" %%% "monadic-html" % "0.3.2"
+      ),
+      scalaJSUseMainModuleInitializer := true
+    )
+
+val server =
+  project
+    .dependsOn(sharedJVM)
+    .enablePlugins(PlayScala)
+    .settings(
+      scalacOptions += "-Ymacro-debug-lite",
+      scalaJSProjects := Seq(client),
+      pipelineStages in Assets := Seq(scalaJSPipeline),
+      libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
+    )

@@ -14,6 +14,7 @@ class Loader extends ApplicationLoader {
 }
 
 class Components(context: ApplicationLoader.Context) extends BuiltInComponentsFromContext(context) {
-  val counterCtl = new Counter
-  val router: Router = new Routes(httpErrorHandler, counterCtl)
+  val counterCtl = new CounterCtl
+  val assetsCtl = new controllers.Assets(httpErrorHandler)
+  val router: Router = new Routes(httpErrorHandler, counterCtl, assetsCtl)
 }
