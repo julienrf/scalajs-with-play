@@ -1,10 +1,10 @@
 % Scala.js with Play
 % Sébastien Doeraene <sebastien.doeraene@epfl.ch>
   Julien Richard-Foy <julien.richard-foy@epfl.ch>
-   
+
   HEIG-VD -- 2017
-   
-   
+
+
   [http://julienrf.github.io/2017/scalajs-with-play](http://julienrf.github.io/2017/scalajs-with-play)
 
 
@@ -426,6 +426,79 @@ import play.api.test.Helpers._
 
 # Scala.js
 
+## Introduction
+
+### Scala for the JVM {.unnumbered}
+
+![](images/jvm-big-picture-with-interpreters.png)
+
+### Scala for JS platforms {.unnumbered}
+
+![](images/js-big-picture-with-interpreters.png)
+
+### Hello world {.unnumbered}
+
+~~~ scala
+package hello
+
+import scala.scalajs.js
+
+object Main extends js.JSApp {
+  def main(): Unit = {
+    println("Hello world")
+  }
+}
+~~~
+
+### sbt setup {.unnumbered}
+
+`project/plugins.sbt`:
+
+~~~ scala
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.16")
+~~~
+
+`build.sbt`:
+
+~~~ scala
+enablePlugins(ScalaJSPlugin)
+
+// There is a main JSApp in this Scala.js project
+scalaJSUseMainModuleInitializer := true
+~~~
+
+### Run it with Node.js {.unnumbered}
+
+~~~
+$ sbt
+...
+> run
+[info] Compiling 1 Scala source to .../target/scala-2.11/classes...
+[info] Fast optimizing .../target/scala-2.11/standaloneclient-fastopt.js
+[info] Running hello.Main
+Hello world
+[success] Total time: 3 s, completed May 15, 2017 2:58:22 PM
+~~~
+
+### Run it in a browser {.unnumbered}
+
+~~~
+> fastOptJS
+...
+~~~
+
+~~~ html
+<html>
+  <head>
+    <title>Hello world</title>
+    <meta charset="utf-8">
+    <script src="./target/scala-2.11/standaloneclient-fastopt.js"
+      type="text/javascript"></script>
+  </head>
+  <body>
+  </body>
+</html>
+~~~
 
 # Play with Scala.js
 

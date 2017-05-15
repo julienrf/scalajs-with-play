@@ -37,3 +37,10 @@ val server =
       pipelineStages in Assets := Seq(scalaJSPipeline),
       libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
     )
+
+val standaloneClient =
+  project
+    .enablePlugins(ScalaJSPlugin)
+    .settings(
+      scalaJSUseMainModuleInitializer := true
+    )
