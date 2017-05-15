@@ -553,6 +553,143 @@ object Main extends js.JSApp {
 }
 ~~~
 
+## A client-only counter application
+
+### A basic HTML view {.unnumbered}
+
+~~~ html
+<div style="text-align: center">
+  <h1 id="counter">0</h1>
+  <p><input id="step" type="number" value="1" /></p>
+  <div>
+    <button id="inc">Increment</button>
+    <button id="reset">Reset</button>
+  </div>
+</div>
+~~~
+
+### Bare DOM manipulation {.unnumbered}
+
+* Document Object Model (DOM)
+* A set of JavaScript APIs, part of the browsers, allowing to manipulate the Web page
+* Can manipulate the "static" structure of the page (the HTML)
+* Can also add *event listeners* to respond to events happening on the page
+* [Comprehensive documention on MDN](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model)
+  ([French version](https://developer.mozilla.org/fr/docs/DOM) -- not always as complete)
+
+### A simple event listener {.unnumbered}
+
+~~~ scala
+import scala.scalajs.js
+import org.scalajs.dom
+import org.scalajs.dom.html
+
+object Main extends js.JSApp {
+  lazy val incButton =
+    dom.document.getElementById("inc").asInstanceOf[html.Button]
+
+  def main(): Unit = {
+    incButton.addEventListener("click", { (e: dom.MouseEvent) =>
+      dom.window.alert("The 'increment' button was clicked")
+    })
+  }
+}
+~~~
+
+### Actually increment the counter {.unnumbered}
+
+~~~ scala
+object Main extends js.JSApp {
+  var counter: Int = 0
+
+  lazy val counterHeading =
+    dom.document.getElementById("counter").asInstanceOf[html.Heading]
+  lazy val incButton =
+    dom.document.getElementById("inc").asInstanceOf[html.Button]
+
+  def main(): Unit = {
+    incButton.addEventListener("click", { (e: dom.MouseEvent) =>
+      counter += 1
+      counterHeading.textContent = counter.toString()
+    })
+  }
+}
+~~~
+
+### Take the step into account {.unnumbered}
+
+~~~ scala
+object Main extends js.JSApp {
+  var counter: Int = 0
+
+  lazy val counterHeading =
+    dom.document.getElementById("counter").asInstanceOf[html.Heading]
+  lazy val stepInput =
+    dom.document.getElementById("step").asInstanceOf[html.Input]
+  lazy val incButton =
+    dom.document.getElementById("inc").asInstanceOf[html.Button]
+
+  def main(): Unit = {
+    incButton.addEventListener("click", { (e: dom.MouseEvent) =>
+      val step = stepInput.value.toInt // value is a String
+      counter += step
+      counterHeading.textContent = counter.toString()
+    })
+  }
+}
+~~~
+
+### Reset {.unnumbered}
+
+~~~ scala
+object Main extends js.JSApp {
+  var counter: Int = 0
+
+  // ...
+  lazy val resetButton =
+    dom.document.getElementById("reset").asInstanceOf[html.Button]
+
+  def main(): Unit = {
+    incButton.addEventListener("click", { (e: dom.MouseEvent) =>
+      val step = stepInput.value.toInt // value is a String
+      counter += step
+      counterHeading.textContent = counter.toString()
+    })
+
+    resetButton.addEventListener("click", { (e: dom.MouseEvent) =>
+      counter = 0
+      counterHeading.textContent = counter.toString()
+      // ^ uh oh, this looks repetitive
+    })
+  }
+}
+~~~
+
+### Managing the state (sort of) {.unnumbered}
+
+~~~ scala
+object Main extends js.JSApp {
+  var counter: Int = 0
+
+  // ...
+  def updateCounter(newCounter: Int): Unit = {
+    counter = newCounter
+    counterHeading.textContent = counter.toString()
+  }
+
+  def main(): Unit = {
+    incButton.addEventListener("click", { (e: dom.MouseEvent) =>
+      val step = stepInput.value.toInt // value is a String
+      updateCounter(counter + step)
+    })
+
+    resetButton.addEventListener("click", { (e: dom.MouseEvent) =>
+      updateCounter(0)
+    })
+  }
+}
+~~~
+
 # Play with Scala.js
 
 
