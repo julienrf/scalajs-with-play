@@ -42,5 +42,8 @@ val standaloneClient =
   project
     .enablePlugins(ScalaJSPlugin)
     .settings(
-      scalaJSUseMainModuleInitializer := true
+      scalaJSUseMainModuleInitializer := true,
+      libraryDependencies ++= Seq(
+        "org.scala-js" %%% "scalajs-dom" % "0.9.2"
+      )
     )

@@ -500,6 +500,31 @@ Hello world
 </html>
 ~~~
 
+### Manipulate the web page {.unnumbered}
+
+`build.sbt`:
+
+~~~ scala
+libraryDependencies ++= Seq(
+  "org.scala-js" %%% "scalajs-dom" % "0.9.2"
+)
+~~~
+
+`Main.scala`:
+
+~~~ scala
+import scala.scalajs.js
+import org.scalajs.dom
+
+object Main extends js.JSApp {
+  def main(): Unit = {
+    val p = dom.document.createElement("p")
+    p.innerHTML = "Hello world"
+    dom.document.body.appendChild(p)
+  }
+}
+~~~
+
 # Play with Scala.js
 
 
