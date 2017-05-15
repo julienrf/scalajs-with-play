@@ -1,10 +1,10 @@
 % Scala.js with Play
 % Sébastien Doeraene <sebastien.doeraene@epfl.ch>
   Julien Richard-Foy <julien.richard-foy@epfl.ch>
-
+   
   HEIG-VD -- 2017
-
-
+   
+   
   [http://julienrf.github.io/2017/scalajs-with-play](http://julienrf.github.io/2017/scalajs-with-play)
 
 
@@ -437,6 +437,7 @@ class CounterUiTest
 
   // …
 }
+~~~
 
 ### Testing with a web browser {.unnumbered}
 
