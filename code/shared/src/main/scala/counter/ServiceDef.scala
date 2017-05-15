@@ -2,10 +2,10 @@ package counter
 
 trait ServiceDef {
 
-  def getCounter(): Int
+  def get(): Int
 
-  def incrementCounter(): Int
+  def increment(step: Int): Int
 
-  def resetCounter(): Int
+  def reset(): Int
 
 }

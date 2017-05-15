@@ -6,10 +6,10 @@ object Service extends ServiceDef {
 
   private val value = Ref(0)
 
-  def getCounter(): Int = value.single.get
+  def get(): Int = value.single.get
 
-  def incrementCounter(): Int = value.single.transformAndGet(_ + 1)
+  def increment(step: Int): Int = value.single.transformAndGet(_ + step)
 
-  def resetCounter(): Int = value.single.transformAndGet(_ => 0)
+  def reset(): Int = value.single.transformAndGet(_ => 0)
 
 }

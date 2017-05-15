@@ -10,7 +10,7 @@ object Client extends autowire.Client[String, Reader, Writer] {
 
   def doCall(req: Request): Future[String] =
     dom.ext.Ajax.post(
-      url = s"/communication/${req.path.mkString("/")}",
+      url = s"/service/${req.path.mkString("/")}",
       data = upickle.default.write(req.args.to[Seq])
     ).map { response =>
       upickle.default.read(response.responseText)

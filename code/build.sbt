@@ -32,8 +32,9 @@ val server =
     .dependsOn(sharedJVM)
     .enablePlugins(PlayScala)
     .settings(
-      scalacOptions += "-Ymacro-debug-lite",
       scalaJSProjects := Seq(client),
       pipelineStages in Assets := Seq(scalaJSPipeline),
-      libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
+      libraryDependencies ++= Seq(
+        "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
+      )
     )

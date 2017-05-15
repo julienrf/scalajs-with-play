@@ -23,7 +23,7 @@
 
 ### The Counter {.unnumbered}
 
-![](screenshot.png)
+![](images/screenshot.png)
 
 
 # Web applications
@@ -386,7 +386,7 @@ class Loader extends ApplicationLoader {
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
 ~~~
 
-`test/counter/CounterTest.scala`
+`test/counter/CounterSpec.scala`
 
 ~~~ scala
 package counter
@@ -394,14 +394,10 @@ package counter
 import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 import play.api.{Application, ApplicationLoader, Environment}
 
-class CounterTest extends PlaySpec with OneServerPerSuite {
+trait CounterSpec extends PlaySpec with OneServerPerSuite {
 
   override lazy val app: Application =
-    new ApplicationLoader {
-      def load(context: ApplicationLoader.Context): Application = {
-        new Components(context).application
-      }
-    }.load(ApplicationLoader.createContext(Environment.simple()))
+    (new Loader).load(ApplicationLoader.createContext(Environment.simple()))
 
 }
 ~~~
@@ -409,19 +405,50 @@ class CounterTest extends PlaySpec with OneServerPerSuite {
 ### Testing an HTTP API {.unnumbered}
 
 ~~~ scala
+package counter
+
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-"test index page" in {
-  val response = route(app, FakeRequest("GET", "/")).value
-  assert(status(response) === OK)
-  assert(contentAsString(response) === "Hello, world!")
+class CounterCtlTest extends CounterSpec {
+
+  "test index page" in {
+    val response = route(app, FakeRequest("GET", "/greet")).value
+    assert(status(response) === OK)
+    assert(contentAsString(response) === "Hello, world!")
+  }
+
 }
 ~~~
 
 ### Testing with a web browser {.unnumbered}
 
 ~~~ scala
-???
+package counter
+
+import org.scalatestplus.play.{ChromeFactory, OneBrowserPerSuite}
+
+class CounterUiTest
+  extends CounterSpec
+    with OneBrowserPerSuite
+    with ChromeFactory {
+
+  System.setProperty("webdriver.chrome.driver", "/home/julien/chromedriver")
+
+  // …
+}
+
+### Testing with a web browser {.unnumbered}
+
+~~~ scala
+"increment" in {
+  go to s"http://localhost:$port${routes.CounterCtl.index().url}"
+  eventually(id("counter").element)
+  val counterElem = id("counter").element
+  assert(counterElem.text == "0")
+  click on id("inc")
+  eventually(assert(counterElem.text == "1"))
+}
 ~~~
 
 # Scala.js

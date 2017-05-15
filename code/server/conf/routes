@@ -1,4 +1,5 @@
-GET    /                         counter.CounterCtl.index
-POST   /communication/*path      counter.CounterCtl.communication(path)
+GET    /greet              counter.CounterCtl.greet
+GET    /                   counter.CounterCtl.index
+POST   /service/*path      counter.CounterCtl.service(path)
 
-GET    /asset/*file              controllers.Assets.versioned(path = "/public", file: Asset)
+GET    /asset/*file        controllers.Assets.versioned(path = "/public", file: Asset)
