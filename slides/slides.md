@@ -601,3 +601,56 @@ npmDependencies in Compile += "react" -> "15.5.4"
 
 - [endpoints](http://julienrf.github.io/endpoints/)
 
+# Appendix
+
+## Implicit parameters
+
+### *ad-hoc* polymorphism {.unnumbered}
+
+~~~ scala
+def max[A](a1: A, a2: A, ordering: Ordering[A]): A =
+  if (ordering.compare(a1, a2) > 0) a1 else a2
+~~~
+
+~~~ scala
+max(1, 2, Ordering.int) // 2
+max("aaa", "bbb", Ordering.string) // "bbb"
+~~~
+
+~~~ scala
+object Ordering {
+  object int extends Ordering[Int] { … }
+  object string extends Ordering[String] { … }
+}
+~~~
+
+### *ad-hoc* polymorphism {.unnumbered}
+
+~~~ scala
+def max[A](a1: A, a2: A)(implicit ordering: Ordering[A]): A =
+  if (ordering.compare(a1, a2) > 0) a1 else a2
+~~~
+
+~~~ scala
+max(1, 2) // 2
+max("aaa", "bbb") // "bbb"
+~~~
+
+### *ad-hoc* polymorphism {.unnumbered}
+
+~~~ scala
+def max[A](a1: A, a2: A)(implicit ordering: Ordering[A]): A =
+  if (ordering.compare(a1, a2) > 0) a1 else a2
+~~~
+
+~~~ scala
+max(1, 2) // 2
+max("aaa", "bbb") // "bbb"
+~~~
+
+~~~ scala
+object Ordering {
+  implicit object int extends Ordering[Int] { … }
+  implicit object string extends Ordering[String] { … }
+}
+~~~
