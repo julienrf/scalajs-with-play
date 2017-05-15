@@ -1,10 +1,10 @@
 % Scala.js with Play
 % Sébastien Doeraene <sebastien.doeraene@epfl.ch>
   Julien Richard-Foy <julien.richard-foy@epfl.ch>
-   
+
   HEIG-VD -- 2017
-   
-   
+
+
   [http://julienrf.github.io/2017/scalajs-with-play](http://julienrf.github.io/2017/scalajs-with-play)
 
 
@@ -453,6 +453,104 @@ class CounterUiTest
 
 # Scala.js
 
+## Introduction
+
+### Scala for the JVM {.unnumbered}
+
+![](images/jvm-big-picture-with-interpreters.png)
+
+### Scala for JS platforms {.unnumbered}
+
+![](images/js-big-picture-with-interpreters.png)
+
+### Hello world {.unnumbered}
+
+~~~ scala
+package hello
+
+import scala.scalajs.js
+
+object Main extends js.JSApp {
+  def main(): Unit = {
+    println("Hello world")
+  }
+}
+~~~
+
+### sbt setup {.unnumbered}
+
+`project/plugins.sbt`:
+
+~~~ scala
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.16")
+~~~
+
+`build.sbt`:
+
+~~~ scala
+enablePlugins(ScalaJSPlugin)
+
+// There is a main JSApp in this Scala.js project
+scalaJSUseMainModuleInitializer := true
+~~~
+
+### Run it with Node.js {.unnumbered}
+
+~~~
+$ sbt
+...
+> run
+[info] Compiling 1 Scala source to .../target/scala-2.11/classes...
+[info] Fast optimizing .../target/scala-2.11/standaloneclient-fastopt.js
+[info] Running hello.Main
+Hello world
+[success] Total time: 3 s, completed May 15, 2017 2:58:22 PM
+~~~
+
+### Run it in a browser {.unnumbered}
+
+~~~
+> fastOptJS
+...
+~~~
+
+~~~ html
+<html>
+  <head>
+    <title>Hello world</title>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <script src="./target/scala-2.11/standaloneclient-fastopt.js"
+      type="text/javascript"></script>
+  </body>
+</html>
+~~~
+
+### Manipulate the web page {.unnumbered}
+
+`build.sbt`:
+
+~~~ scala
+libraryDependencies ++= Seq(
+  "org.scala-js" %%% "scalajs-dom" % "0.9.2"
+)
+~~~
+
+`Main.scala`:
+
+~~~ scala
+import scala.scalajs.js
+import org.scalajs.dom
+
+object Main extends js.JSApp {
+  def main(): Unit = {
+    val p = dom.document.createElement("p")
+    p.innerHTML = "Hello world"
+    dom.document.body.appendChild(p)
+  }
+}
+~~~
 
 # Play with Scala.js
 
