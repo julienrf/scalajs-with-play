@@ -12,6 +12,12 @@ object JQueryGlobal extends js.Object {
 @ScalaJSDefined
 trait JQuery extends js.Object {
   def click(handler: js.Function1[JQueryEvent, Any]): Unit
+
+  def html(): String
+  def html(v: String): this.type
+
+  @JSName("val") def value(): String
+  @JSName("val") def value(v: String): this.type
 }
 
 @js.native

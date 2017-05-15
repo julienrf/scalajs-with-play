@@ -741,7 +741,7 @@ object JQueryGlobal extends js.Object {
   def jQuery(selector: String): JQuery = js.native
 }
 
-@ScalaJSDefined
+@ScalaJSDefined // usually what you want for *traits*
 trait JQuery extends js.Object {
   // TODO
 }
@@ -865,6 +865,71 @@ Yeah! It works again (finally ...)
 * We can still give a Scala function literal (aka lambda) to the `click` method
 * That's because there are *implicit conversions* from Scala functions to their corresponding JavaScript functions
 * Still important to declare the *facade* with the proper type, though!
+
+### Type correspondence
+
+Scala types                         JavaScript types
+-------------                       --------------------
+`Boolean`                           `boolean`
+`Int`                               whole `number` in [-2^31, 2^31)
+`Double`                            `number`
+`String`                            `string` (or `null`)
+`Unit`                              `undefined`
+`Null`                              `null`
+`js.FunctionN[-T1, ..., -TN, +R]`   function values (similar to `(T1, ..., TN) => R`)
+`js.Array[A]`                       `Array` with elements of type `A`
+`js.Dictionary[A]`                  `object` acting as a map of `String`s to `A`s
+`js.UndefOr[+A]`                    a value of type `A` *or* `undefined` (similar to `Option[+A]`)
+
+Reference: [JavaScript types in Scala.js](https://www.scala-js.org/doc/interoperability/types.html)
+
+### More on writing facade types
+
+* `var`, `val` and `def` without `()` model *fields* (aka *properties*)
+* `@JSGlobal object ...` for top-level, global objects (e.g., the `Math` object)
+    - often used as a companion object to model "static" methods
+* `Int | String` can be used to model a value of type `Int` *or* `String` (or any other pair of types)
+    - requires `import scala.scalajs.js.|`
+
+Reference: [Writing facade types in Scala.js](https://www.scala-js.org/doc/interoperability/facade-types.html)
+
+### Finishing up the jQuery version {.unnumbered}
+
+~~~ scala
+  def updateCounter(newCounter: Int): Unit = {
+    counter = newCounter
+    counterHeading.html(counter.toString())
+  }
+
+  def main(): Unit = {
+    incButton.click { (e: JQueryEvent) =>
+      val step = stepInput.value().toInt
+      updateCounter(counter + step)
+    }
+
+    resetButton.click { (e: JQueryEvent) =>
+      updateCounter(0)
+    }
+  }
+~~~
+
+### Define `html` and `value` {.unnumbered}
+
+* [`.html()`](http://api.jquery.com/html/)
+* [`.val()`](http://api.jquery.com/val/)
+
+~~~ scala
+@ScalaJSDefined
+trait JQuery extends js.Object {
+  def click(handler: js.Function1[JQueryEvent, Any]): Unit
+
+  def html(): String
+  def html(v: String): this.type
+
+  @JSName("val") def value(): String
+  @JSName("val") def value(v: String): this.type
+}
+~~~
 
 # Play with Scala.js
 
