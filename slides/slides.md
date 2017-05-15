@@ -1,10 +1,10 @@
 % Scala.js with Play
 % Sébastien Doeraene <sebastien.doeraene@epfl.ch>
   Julien Richard-Foy <julien.richard-foy@epfl.ch>
-   
+
   HEIG-VD -- 2017
-   
-   
+
+
   [http://julienrf.github.io/2017/scalajs-with-play](http://julienrf.github.io/2017/scalajs-with-play)
 
 
@@ -689,6 +689,182 @@ object Main extends js.JSApp {
   }
 }
 ~~~
+
+## Using jQuery -- interoperability with JavaScript
+
+* What if we want to use jQuery instead of the DOM?
+* Scala is good at interoperability with Java;
+  likewise, Scala.js is good at interoperability with JavaScript
+
+### Script tag for jQuery 3.x
+
+~~~ html
+<script
+  src="https://code.jquery.com/jquery-3.2.1.js"
+  integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+  crossorigin="anonymous"></script>
+~~~
+
+### The simple event again {.unnumbered}
+
+~~~ scala
+object Main extends js.JSApp {
+  var counter: Int = 0
+
+  lazy val incButton = jQuery("#inc")
+
+  def main(): Unit = // ...
+}
+~~~
+
+~~~
+[info] Compiling 1 Scala source to .../target/scala-2.11/classes...
+[error] .../src/main/scala/hello/Main.scala:10: not found: value jQuery
+[error]   lazy val incButton = jQuery("#inc")
+[error]                        ^
+[error] one error found
+~~~
+
+### Let us define `jQuery`! {.unnumbered}
+
+* [`jQuery()`](http://api.jquery.com/jQuery/)
+
+~~~ scala
+package hello
+
+import scala.scalajs.js
+import scala.scalajs.js.annotation._
+
+@js.native
+@JSGlobalScope
+object JQueryGlobal extends js.Object {
+  def jQuery(selector: String): JQuery = js.native
+}
+
+@ScalaJSDefined
+trait JQuery extends js.Object {
+  // TODO
+}
+~~~
+
+### The simple event again (2) {.unnumbered}
+
+~~~ scala
+import JQueryGlobal.jQuery
+
+object Main extends js.JSApp {
+  var counter: Int = 0
+
+  lazy val incButton = jQuery("#inc")
+
+  def main(): Unit = // ...
+}
+~~~
+
+### The simple event again (3) {.unnumbered}
+
+~~~ scala
+import JQueryGlobal.jQuery
+
+object Main extends js.JSApp {
+  var counter: Int = 0
+
+  lazy val incButton = jQuery("#inc")
+
+  def main(): Unit = {
+    incButton.click { (e: JQueryEvent) =>
+      dom.window.alert("The 'increment' button was clicked")
+    }
+  }
+}
+~~~
+
+~~~
+[error] .../src/main/scala/hello/Main.scala:15: value click is not a member of hello.JQuery
+[error]     incButton.click { (e: JQueryEvent) =>
+[error]               ^
+[error] .../src/main/scala/hello/Main.scala:15: not found: type JQueryEvent
+[error]     incButton.click { (e: JQueryEvent) =>
+[error]                           ^
+~~~
+
+### Let us define `click` and `JQueryEvent`! {.unnumbered}
+
+* [`.click()`](http://api.jquery.com/click/)
+* [`jQuery.Event`](http://api.jquery.com/category/events/event-object/)
+
+~~~ scala
+@ScalaJSDefined
+trait JQuery extends js.Object {
+  def click(handler: JQueryEvent => Any): Unit
+}
+
+@js.native
+@JSGlobal("jQuery.Event")
+class JQueryEvent(name: String) extends js.Object {
+}
+~~~
+
+### The simple event again (4) {.unnumbered}
+
+~~~ scala
+import JQueryGlobal.jQuery
+
+object Main extends js.JSApp {
+  var counter: Int = 0
+
+  lazy val incButton = jQuery("#inc")
+
+  def main(): Unit = {
+    incButton.click { (e: JQueryEvent) =>
+      dom.window.alert("The 'increment' button was clicked")
+    }
+  }
+}
+~~~
+
+Now compiles, but at run-time ...
+
+~~~
+TypeError: (intermediate value).apply is not a function
+~~~
+
+### Scala functions v JavaScript functions {.unnumbered}
+
+~~~ scala
+@ScalaJSDefined
+trait JQuery extends js.Object {
+  def click(handler: JQueryEvent => Any): Unit
+}
+~~~
+
+* `JQueryEvent => Any` is a *Scala function*, and that is not compatible with *JavaScript functions*.
+* Giving a Scala function to jQuery blows it up
+
+### Scala functions v JavaScript functions (2) {.unnumbered}
+
+~~~ scala
+@ScalaJSDefined
+trait JQuery extends js.Object {
+  def click(handler: js.Function1[JQueryEvent, Any]): Unit
+}
+~~~
+
+Yeah! It works again (finally ...)
+
+### Implicit conversions {.unnumbered}
+
+~~~ scala
+  def main(): Unit = {
+    incButton.click { (e: JQueryEvent) =>
+      dom.window.alert("The 'increment' button was clicked")
+    }
+  }
+~~~
+
+* We can still give a Scala function literal (aka lambda) to the `click` method
+* That's because there are *implicit conversions* from Scala functions to their corresponding JavaScript functions
+* Still important to declare the *facade* with the proper type, though!
 
 # Play with Scala.js
 
