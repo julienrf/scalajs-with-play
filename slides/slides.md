@@ -491,11 +491,11 @@ Hello world
 <html>
   <head>
     <title>Hello world</title>
-    <meta charset="utf-8">
-    <script src="./target/scala-2.11/standaloneclient-fastopt.js"
-      type="text/javascript"></script>
+    <meta charset="utf-8" />
   </head>
   <body>
+    <script src="./target/scala-2.11/standaloneclient-fastopt.js"
+      type="text/javascript"></script>
   </body>
 </html>
 ~~~
