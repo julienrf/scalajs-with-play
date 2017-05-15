@@ -931,6 +931,146 @@ trait JQuery extends js.Object {
 }
 ~~~
 
+## Using `monadic-html`
+
+* [`monadic-html`](https://github.com/OlivierBlanvillain/monadic-html)
+* A Scala.js library (written in Scala) for simple, precise data-binding
+
+### Core concept: `Rx[A]`
+
+* `Rx[A]` is a value of type `A` that can change over time
+* It can be seen as a *stream* of values where new values come in as time passes
+
+<p>![rx-basic](images/rx-basic.svg)</p>
+
+### Transforming `Rx[A]` using `map`
+
+* We can *transform* an `Rx[A]` into an `Rx[B]` using `map`
+* Similar to `List.map`, except we have to think about it in terms of time
+
+~~~ scala
+val x: Rx[Int] = ???
+val y = x.map(a => a * 2)
+val z = y.map(a => a.toString)
+~~~
+
+<p>![](images/rx-map.svg)</p>
+
+### Dropping values
+
+* We can *drop* (or filter out) values we are not interested in using `dropIf`
+* Similar to `List.filterNot`
+
+~~~ scala
+val x: Rx[Int] = ???
+val y = x.dropIf(a => a % 2 == 0)(1) // 1 is the default value
+~~~
+
+<p>![](images/rx-dropif.svg)</p>
+
+`keepIf` is similar but keeps values satisfying the predicate
+
+### Dropping values
+
+* We can *merge* two `Rx`es into one using `merge`
+* Updates of both inputs are seen as updates of the output
+
+~~~ scala
+val x: Rx[Int] = ???
+val y: Rx[Int] = ???
+val z = x.merge(y)
+~~~
+
+<p>![](images/rx-merge.svg)</p>
+
+### Other operations
+
+There are several other operations [documented here](https://github.com/OlivierBlanvillain/monadic-html#frp-ish-apis):
+
+* `flatMap`
+* `dropRepeats`
+* etc.
+
+### The source of `Rx`es: `Var[A]`
+
+* A `Var[A]` is an `Rx[A]` that we can directly mutate, creating a *source* stream
+* Its API is defined as:
+
+~~~ scala
+class Var[A](initialValue: A) extends Rx[A] {
+  def :=(newValue: A): Unit
+  def update(f: A => A): Unit
+}
+~~~
+
+`:=` does not really "destroy" the old value; it adds a new value to the timeline.
+
+### The source of `Rx`es: `Var[A]` (2)
+
+~~~ scala
+val x: Var[Int] = Var(4)
+// later
+x := 10
+// even later
+x.update(prev => prev / 5)
+...
+~~~
+
+creates the original `Rx`
+
+<p>![rx-basic](images/rx-basic.svg)</p>
+
+### `Rx`es, `Var`s and monadic-html
+
+* monadic-html allows you to write XML literals representing DOM elements
+* Dynamic parts can be filled in with `Rx`es
+
+~~~ scala
+import mhtml._
+import scala.xml.Node
+import org.scalajs.dom
+
+val count = Var(0)
+
+val component =
+  <div>
+    <p>{ count }</p>
+    <button onclick={ () => count.update(prev => prev + 1) }>Increment</button>
+  </div>
+
+val div = dom.document.createElement("div")
+mount(div, component)
+~~~
+
+### The counter app with monadic-html
+
+~~~ scala
+object Main extends js.JSApp {
+  val counter = Var(0)
+  var step: Int = 1
+
+  def main(): Unit = {
+    val content =
+      <div>
+        <h1>{ counter } (twice is { counter.map(c => c * 2) })</h1>
+        <p><input type="number" value="1" onchange={ (e: dom.Event) =>
+          step = e.target.asInstanceOf[html.Input].value.toInt
+        } /></p>
+        <div>
+          <button onclick={ () =>
+            counter.update(prev => prev + step)
+          }>Increment</button>
+          <button onclick={ () =>
+            counter := 0
+          }>Reset</button>
+        </div>
+      </div>
+
+    mount(dom.document.getElementById("main"), content)
+  }
+}
+~~~
+
 # Play with Scala.js
 
 

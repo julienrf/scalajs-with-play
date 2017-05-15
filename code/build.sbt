@@ -45,6 +45,7 @@ val standaloneClient =
     .settings(
       scalaJSUseMainModuleInitializer := true,
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "0.9.2"
+        "org.scala-js" %%% "scalajs-dom" % "0.9.2",
+        "in.nvilla" %%% "monadic-html" % "0.3.2"
       )
     )
