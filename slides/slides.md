@@ -931,6 +931,14 @@ trait JQuery extends js.Object {
 }
 ~~~
 
+### Do we have to write these things all the time!?
+
+No! A lot of Scala.js libraries are published, defining facades for you.
+
+[Check them out here](https://www.scala-js.org/libraries/facades.html)
+
+(there are even 2 such libraries for jQuery)
+
 ## Using `monadic-html`
 
 * [`monadic-html`](https://github.com/OlivierBlanvillain/monadic-html)
@@ -1070,6 +1078,47 @@ object Main extends js.JSApp {
   }
 }
 ~~~
+
+## Scala.js v Scala/JVM: the language
+
+* Technically, Scala.js is a *dialect* of Scala
+    - Not *everything* behaves the same in both languages
+    - Differences are rare, though
+
+### Can I do in Scala.js everything I can in Scala?
+
+Yes and no.
+
+* At the *language* level, basically *yes*:
+  any pure-Scala code will also compile and run in Scala.js
+* At the *libraries* level, not always:
+    - Some core Java APIs are supported, but in general Java libraries cannot be used
+      (e.g., no `java.lang.Thread`, no `java.io.File`, etc.)
+    - Blocking APIs do not work (e.g., no `Await.result`)
+    - Only Scala libraries that are *cross-compiled* can be used
+      (i.e., they must build with Scala.js, and you must depend on them with `%%%`)
+
+### What exactly are the differences with Scala/JVM?
+
+Reference: [comprehensive listing of semantic differences](https://www.scala-js.org/doc/semantics.html)
+
+* Undefined behaviors: `ClassCastException`s, `ArrayIndexOutOfBoundsException`s, etc.
+* Regular expressions
+* Pattern matching on primitive numbers
+* Run-time reflection is not supported
+* and a few other minor things
+
+### Scala.js: summary
+
+* The Scala language available on JS platforms
+* Interoperability with JavaScript: write facades yourselves or use published libraries
+* monadic-html
+
+Useful links
+
+* The Scala.js website: [https://www.scala-js.org/](https://www.scala-js.org/)
+* [StackOverflow questions](http://stackoverflow.com/questions/tagged/scala.js)
+* The [Gitter chat room](https://gitter.im/scala-js/scala-js)
 
 # Play with Scala.js
 
