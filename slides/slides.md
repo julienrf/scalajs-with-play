@@ -690,13 +690,15 @@ object Main extends js.JSApp {
 }
 ~~~
 
-## Using jQuery -- interoperability with JavaScript
+## Interoperability with JavaScript
+
+### Using jQuery {.unnumbered}
 
 * What if we want to use jQuery instead of the DOM?
 * Scala is good at interoperability with Java;
   likewise, Scala.js is good at interoperability with JavaScript
 
-### Script tag for jQuery 3.x
+### Script tag for jQuery 3.x {.unnumbered}
 
 ~~~ html
 <script
@@ -866,7 +868,7 @@ Yeah! It works again (finally ...)
 * That's because there are *implicit conversions* from Scala functions to their corresponding JavaScript functions
 * Still important to declare the *facade* with the proper type, though!
 
-### Type correspondence
+### Type correspondence {.unnumbered}
 
 Scala types                         JavaScript types
 -------------                       --------------------
@@ -883,7 +885,7 @@ Scala types                         JavaScript types
 
 Reference: [JavaScript types in Scala.js](https://www.scala-js.org/doc/interoperability/types.html)
 
-### More on writing facade types
+### More on writing facade types {.unnumbered}
 
 * `var`, `val` and `def` without `()` model *fields* (aka *properties*)
 * `@JSGlobal object ...` for top-level, global objects (e.g., the `Math` object)
@@ -931,7 +933,7 @@ trait JQuery extends js.Object {
 }
 ~~~
 
-### Do we have to write these things all the time!?
+### Do we have to write these things all the time!? {.unnumbered}
 
 No! A lot of Scala.js libraries are published, defining facades for you.
 
@@ -941,20 +943,24 @@ No! A lot of Scala.js libraries are published, defining facades for you.
 
 ## Using `monadic-html`
 
+### monadic-html {.unnumbered}
+
 * [`monadic-html`](https://github.com/OlivierBlanvillain/monadic-html)
 * A Scala.js library (written in Scala) for simple, precise data-binding
 
-### Core concept: `Rx[A]`
+### Core concept: `Rx[A]` {.unnumbered}
 
 * `Rx[A]` is a value of type `A` that can change over time
 * It can be seen as a *stream* of values where new values come in as time passes
 
 <p>![rx-basic](images/rx-basic.svg)</p>
 
-### Transforming `Rx[A]` using `map`
+### Transforming `Rx[A]` using `map` {.unnumbered}
 
 * We can *transform* an `Rx[A]` into an `Rx[B]` using `map`
 * Similar to `List.map`, except we have to think about it in terms of time
+
+### Transforming `Rx[A]` using `map` (2) {.unnumbered}
 
 ~~~ scala
 val x: Rx[Int] = ???
@@ -964,7 +970,7 @@ val z = y.map(a => a.toString)
 
 <p>![](images/rx-map.svg)</p>
 
-### Dropping values
+### Dropping values {.unnumbered}
 
 * We can *drop* (or filter out) values we are not interested in using `dropIf`
 * Similar to `List.filterNot`
@@ -976,12 +982,17 @@ val y = x.dropIf(a => a % 2 == 0)(1) // 1 is the default value
 
 <p>![](images/rx-dropif.svg)</p>
 
-`keepIf` is similar but keeps values satisfying the predicate
+### Keeping values {.unnumbered}
 
-### Dropping values
+* While `dropIf` drops values satisfying a predicate, `keepIf` *keeps only* the values satisfying a predicate
+* Similar to `List.filter`
+
+### Merging two `Rx`es {.unnumbered}
 
 * We can *merge* two `Rx`es into one using `merge`
 * Updates of both inputs are seen as updates of the output
+
+### Merging two `Rx`es (2) {.unnumbered}
 
 ~~~ scala
 val x: Rx[Int] = ???
@@ -991,7 +1002,7 @@ val z = x.merge(y)
 
 <p>![](images/rx-merge.svg)</p>
 
-### Other operations
+### Other operations {.unnumbered}
 
 There are several other operations [documented here](https://github.com/OlivierBlanvillain/monadic-html#frp-ish-apis):
 
@@ -999,7 +1010,7 @@ There are several other operations [documented here](https://github.com/OlivierB
 * `dropRepeats`
 * etc.
 
-### The source of `Rx`es: `Var[A]`
+### The source of `Rx`es: `Var[A]` {.unnumbered}
 
 * A `Var[A]` is an `Rx[A]` that we can directly mutate, creating a *source* stream
 * Its API is defined as:
@@ -1013,7 +1024,7 @@ class Var[A](initialValue: A) extends Rx[A] {
 
 `:=` does not really "destroy" the old value; it adds a new value to the timeline.
 
-### The source of `Rx`es: `Var[A]` (2)
+### The source of `Rx`es: `Var[A]` (2) {.unnumbered}
 
 ~~~ scala
 val x: Var[Int] = Var(4)
@@ -1028,7 +1039,7 @@ creates the original `Rx`
 
 <p>![rx-basic](images/rx-basic.svg)</p>
 
-### `Rx`es, `Var`s and monadic-html
+### `Rx`es, `Var`s and monadic-html {.unnumbered}
 
 * monadic-html allows you to write XML literals representing DOM elements
 * Dynamic parts can be filled in with `Rx`es
@@ -1043,14 +1054,16 @@ val count = Var(0)
 val component =
   <div>
     <p>{ count }</p>
-    <button onclick={ () => count.update(prev => prev + 1) }>Increment</button>
+    <button onclick={ () =>
+      count.update(prev => prev + 1)
+    }>Increment</button>
   </div>
 
 val div = dom.document.createElement("div")
 mount(div, component)
 ~~~
 
-### The counter app with monadic-html
+### The counter app with monadic-html {.unnumbered}
 
 ~~~ scala
 object Main extends js.JSApp {
@@ -1081,11 +1094,13 @@ object Main extends js.JSApp {
 
 ## Scala.js v Scala/JVM: the language
 
+### Scala.js v Scala/JVM: the language {.unnumbered}
+
 * Technically, Scala.js is a *dialect* of Scala
     - Not *everything* behaves the same in both languages
     - Differences are rare, though
 
-### Can I do in Scala.js everything I can in Scala?
+### Can I do in Scala.js everything I can in Scala? {.unnumbered}
 
 Yes and no.
 
@@ -1098,7 +1113,7 @@ Yes and no.
     - Only Scala libraries that are *cross-compiled* can be used
       (i.e., they must build with Scala.js, and you must depend on them with `%%%`)
 
-### What exactly are the differences with Scala/JVM?
+### What exactly are the differences with Scala/JVM? {.unnumbered}
 
 Reference: [comprehensive listing of semantic differences](https://www.scala-js.org/doc/semantics.html)
 
@@ -1108,7 +1123,7 @@ Reference: [comprehensive listing of semantic differences](https://www.scala-js.
 * Run-time reflection is not supported
 * and a few other minor things
 
-### Scala.js: summary
+### Scala.js: summary {.unnumbered}
 
 * The Scala language available on JS platforms
 * Interoperability with JavaScript: write facades yourselves or use published libraries
