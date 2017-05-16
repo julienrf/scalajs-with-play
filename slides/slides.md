@@ -464,6 +464,11 @@ class CounterUiTest
 
 ![](images/js-big-picture-with-interpreters.png)
 
+### Things to install {.unnumbered}
+
+* [Node.js](https://nodejs.org/en/)
+* Recommended: run `npm install source-map-support` in your project directory
+
 ### Hello world {.unnumbered}
 
 ~~~ scala
