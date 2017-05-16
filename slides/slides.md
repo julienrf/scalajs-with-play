@@ -1,10 +1,10 @@
 % Scala.js with Play
-% Sébastien Doeraene <sebastien.doeraene@epfl.ch>
-  Julien Richard-Foy <julien.richard-foy@epfl.ch>
-
+% Sébastien Doeraene &nbsp;&nbsp;&nbsp; <sebastien.doeraene@epfl.ch>
+  Julien Richard-Foy &nbsp;&nbsp;&nbsp; <julien.richard-foy@epfl.ch>
+  &nbsp;
   HEIG-VD -- 2017
-
-
+  &nbsp;
+  &nbsp;
   [http://julienrf.github.io/2017/scalajs-with-play](http://julienrf.github.io/2017/scalajs-with-play)
 
 
