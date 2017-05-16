@@ -1,22 +1,29 @@
 package counter
 
+import java.nio.ByteBuffer
+
+import scala.scalajs.js.typedarray._
 import org.scalajs.dom
-import upickle.default.{Reader, Writer}
+
+import boopickle.Default._
 
 import scala.concurrent.Future
-import scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.concurrent.ExecutionContext.Implicits.global
 
-object Client extends autowire.Client[String, Reader, Writer] {
+object Client extends autowire.Client[ByteBuffer, Pickler, Pickler] {
 
-  def doCall(req: Request): Future[String] =
+  override def doCall(req: Request): Future[ByteBuffer] = {
     dom.ext.Ajax.post(
-      url = s"/service/${req.path.mkString("/")}",
-      data = upickle.default.write(req.args.to[Seq])
-    ).map { response =>
-      upickle.default.read(response.responseText)
+      url = "/service/" + req.path.mkString("/"),
+      data = Pickle.intoBytes(req.args),
+      responseType = "arraybuffer",
+      headers = Map("Content-Type" -> "application/octet-stream")
+    ).map { r =>
+      TypedArrayBuffer.wrap(r.response.asInstanceOf[ArrayBuffer])
     }
+  }
 
-  def read[Result : Reader](p: String): Result = upickle.default.read(p)
-  def write[Result : Writer](r: Result): String = upickle.default.write(r)
+  override def read[Result: Pickler](p: ByteBuffer) = Unpickle[Result].fromBytes(p)
+  override def write[Result: Pickler](r: Result) = Pickle.intoBytes(r)
 
 }

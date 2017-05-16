@@ -8,7 +8,7 @@ val shared =
     .settings(
       libraryDependencies ++= Seq(
         "com.lihaoyi" %%% "autowire" % "0.2.6",
-        "com.lihaoyi" %%% "upickle" % "0.4.3"
+        "io.suzaku" %%% "boopickle" % "1.2.6"
       )
     )
 
