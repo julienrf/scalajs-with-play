@@ -1,13 +1,15 @@
 package counter
 
 import autowire._
-import mhtml.{Rx, Var, mount}
+import boopickle.Default._
+import mhtml.{Var, mount}
+
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
 
-import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js.{JSApp, JSON}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 object Main extends JSApp {
@@ -58,7 +60,9 @@ object Main extends JSApp {
 
         mount(dom.document.body, app)
 
-      case Failure(reason) => println("Unable to retrieve the counter state")
+      case Failure(reason) =>
+        println("Unable to retrieve the counter state")
+        reason.printStackTrace()
     }
 
   }

@@ -1,6 +1,9 @@
 package counter
 
-import autowire.Core.Request
+import java.nio.ByteBuffer
+
+import boopickle.Default._
+
 import play.api.mvc.{Action, Controller}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.Json
@@ -36,9 +39,19 @@ class CounterCtl extends Controller {
       )
   }
 
-  def service(path: String) = Action.async(parse.text) { request =>
-    val args = upickle.default.read[Seq[(String, String)]](request.body).toMap
-    Server.routes(Request(path.split("/"), args)).map(s => Ok(upickle.default.write(s)))
+  def service(path: String) = Action.async(parse.raw) { request =>
+    // get the request body as ByteString
+    val b = request.body.asBytes(parse.UNLIMITED).get
+
+    // call Autowire route
+    Server.route[ServiceDef](Service)(
+      autowire.Core.Request(path.split("/"),
+        Unpickle[Map[String, ByteBuffer]].fromBytes(b.asByteBuffer))
+    ).map { buffer =>
+      val data = Array.ofDim[Byte](buffer.remaining())
+      buffer.get(data)
+      Ok(data)
+    }
   }
 
 }
