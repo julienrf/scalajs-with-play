@@ -1006,13 +1006,48 @@ val z = x.merge(y)
 
 <p>![](images/rx-merge.svg)</p>
 
+### Sampling {.unnumbered}
+
+* We can *sample* one `Rx` on every update of *another* `Rx` using `sampleOn`
+* Only values of the *first* `Rx` are seen as output, but only *when* there are updates on the *second* `Rx`
+
+### Sampling (2) {.unnumbered}
+
+~~~ scala
+val x: Rx[Int] = ???
+val y: Rx[Int] = ???
+val z = x.sampleOn(y)
+~~~
+
+<p>![](images/rx-sampleon.svg)</p>
+
 ### Other operations {.unnumbered}
 
 There are several other operations [documented here](https://github.com/OlivierBlanvillain/monadic-html#frp-ish-apis):
 
 * `flatMap`
 * `dropRepeats`
+* `product`
 * etc.
+
+### Custom combinator: zipLeft {.unnumbered}
+
+* On every update of one `Rx`, combine it with the latest value of another `Rx`
+
+~~~ scala
+def zipLeft[A, B](x: Rx[A], y: Rx[B]): Rx[(A, B)] =
+  x.product(y).sampleOn(x)
+~~~
+
+### Custom combinator: zipLeft (2) {.unnumbered}
+
+~~~ scala
+val x: Rx[Int] = ???
+val y: Rx[Int] = ???
+val z = zipLeft(x, y)
+~~~
+
+<p>![](images/rx-zipleft.svg)</p>
 
 ### The source of `Rx`es: `Var[A]` {.unnumbered}
 
@@ -1092,6 +1127,65 @@ object Main extends js.JSApp {
       </div>
 
     mount(dom.document.getElementById("main"), content)
+  }
+}
+~~~
+
+### More idiomatic monadic-html {.unnumbered}
+
+* Using (normal) mutable state, like a `var`, is typically bad
+* monadic-html recommends to only use `Var`s to keep track of state
+* Furthermore, they recommend the rule of thumb "1 `Var` for 1 `:=`/`update`"
+* Our previous implementation clearly does not live to those expectations
+
+### Event signals and operations {.unnumbered}
+
+* Event *signals* are simple `Var`s updated on every relevant DOM event
+* *Operations* are transformations to apply to the visible state of the application
+
+### Event signals {.unnumbered}
+
+~~~ scala
+val step = Var(1)
+val incrementClicks = Var(())
+val resetClicks = Var(())
+// ...
+val content =
+  <div>
+    <h1>{ counter }</h1>
+    <p><input type="number" value="1" onchange={ (e: dom.Event) =>
+      step := e.target.asInstanceOf[html.Input].value.toInt
+    } /></p>
+    <div>
+      <button onclick={ () => incrementClicks := () }>Increment</button>
+      <button onclick={ () => resetClicks := () }>Reset</button>
+    </div>
+  </div>
+~~~
+
+### Operations {.unnumbered}
+
+~~~ scala
+sealed abstract class Operation
+final case class IncrementStep(step: Int) extends Operation
+case object Reset extends Operation
+
+val incrementOps = zipLeft(incrementClicks, step).map {
+  case (click, step) => IncrementStep(step)
+}
+val resetOps = resetClicks.map(_ => Reset)
+val allOperations: Rx[Operation] = incrementOps.merge(resetOps)
+~~~
+
+### Visible state as a *fold* of all operations {.unnumbered}
+
+* `Rx.foldp` is similar to `List.foldLeft`
+
+~~~ scala
+val counter = allOperations.foldp(0) { (prev, op) =>
+  op match {
+    case IncrementStep(step) => prev + step
+    case Reset               => 0
   }
 }
 ~~~
