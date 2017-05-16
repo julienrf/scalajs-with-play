@@ -1113,6 +1113,42 @@ Yes and no.
     - Only Scala libraries that are *cross-compiled* can be used
       (i.e., they must build with Scala.js, and you must depend on them with `%%%`)
 
+### Futures in Scala.js {.unnumbered}
+
+~~~ scala
+import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
+
+val f = Future { 42 }
+val g = f.map(x => x / 2)
+val h = g.map(x => x + 6)
+h.onComplete(println)
+~~~
+
+Basically just like in Scala/JVM, except ...
+
+### No Await.result {.unnumbered}
+
+~~~ scala
+import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
+
+val f: Future[Int]
+val x = Await.result(f)
+~~~
+
+~~~
+...
+[error] Referring to non-existent method scala.concurrent.impl.Promise$CompletionLatch.releaseShared(scala.Int)scala.Boolean
+[error]   called from scala.concurrent.impl.Promise$CompletionLatch.apply(scala.util.Try)scala.Unit
+[error]   called from scala.concurrent.impl.Promise$CompletionLatch.apply(java.lang.Object)java.lang.Object
+[error]   called from scala.util.Success.$$anonfun$3(scala.Function1)java.lang.Object
+[error]   called from scala.util.Success.map(scala.Function1)scala.util.Try
+...
+~~~
+
+In general, blocking APIs do not exist at all in JavaScript environments.
+
 ### What exactly are the differences with Scala/JVM? {.unnumbered}
 
 Reference: [comprehensive listing of semantic differences](https://www.scala-js.org/doc/semantics.html)
@@ -1123,6 +1159,28 @@ Reference: [comprehensive listing of semantic differences](https://www.scala-js.
 * Run-time reflection is not supported
 * and a few other minor things
 
+### Undefined behavior: example
+
+~~~ scala
+val a = new Array[Int](5)
+println(a(10))
+~~~
+
+JVM:
+
+~~~
+java.lang.ArrayIndexOutOfBoundsException: 10
+~~~
+
+Scala.js:
+
+~~~
+scala.scalajs.runtime.UndefinedBehaviorError: An undefined behavior was detected: 10
+~~~
+
+[Demons could fly out of your nose](https://groups.google.com/forum/?hl=en#!msg/comp.std.c/ycpVKxTZkgw/S2hHdTbv4d8J)
+(although in "dev" mode aka `fastOptJS`, most UBs are checked and reported as `UndefinedBehaviorError`)
+
 ### Scala.js: summary {.unnumbered}
 
 * The Scala language available on JS platforms
@@ -1132,6 +1190,7 @@ Reference: [comprehensive listing of semantic differences](https://www.scala-js.
 Useful links
 
 * The Scala.js website: [https://www.scala-js.org/](https://www.scala-js.org/)
+  (with pointers to more documentation, tutorials, etc.)
 * [StackOverflow questions](http://stackoverflow.com/questions/tagged/scala.js)
 * The [Gitter chat room](https://gitter.im/scala-js/scala-js)
 
