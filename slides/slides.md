@@ -15,7 +15,6 @@
 - Play
 - Scala.js
 - Play and Scala.js
-- Discussion
 
 # Introduction
 
@@ -920,7 +919,7 @@ Reference: [Writing facade types in Scala.js](https://www.scala-js.org/doc/inter
   }
 ~~~
 
-### Define `html` and `value` {.unnumbered}
+### Define `html` and `value`  {.unnumbered}
 
 * [`.html()`](http://api.jquery.com/html/)
 * [`.val()`](http://api.jquery.com/val/)
@@ -953,14 +952,14 @@ No! A lot of Scala.js libraries are published, defining facades for you.
 * [`monadic-html`](https://github.com/OlivierBlanvillain/monadic-html)
 * A Scala.js library (written in Scala) for simple, precise data-binding
 
-### Core concept: `Rx[A]` {.unnumbered}
+### Core concept: `Rx[A]`  {.unnumbered}
 
 * `Rx[A]` is a value of type `A` that can change over time
 * It can be seen as a *stream* of values where new values come in as time passes
 
 <p>![rx-basic](images/rx-basic.svg)</p>
 
-### Transforming `Rx[A]` using `map` {.unnumbered}
+### Transforming `Rx[A]` using `map`  {.unnumbered}
 
 * We can *transform* an `Rx[A]` into an `Rx[B]` using `map`
 * Similar to `List.map`, except we have to think about it in terms of time
@@ -1323,9 +1322,9 @@ def onIncrement(): Unit =
 
 ### Autowire {.unnumbered}
 
-- Remote invokation automation
+- Remote invocation automation
 - All client / server communications go through a single HTTP endpoint
-- Autowire takes care of forging the URL corresponding to the endpoint to invoke
+- Autowire takes care of forging the URL corresponding to the service method to invoke
 - Data marshalling is configurable
 
 ### Autowire + BooPickle architecture {.unnumbered}
@@ -1498,9 +1497,14 @@ def onChangeStep(event: Event): Unit = {
 </div>
 ~~~
 
-# Summary
+## Summary
 
+### Summary {.unnumbered}
 
+- Play and Scala.js integration
+    - build tool: `sbt-web-scalajs`
+    - remote invocation: `autowire`
+    - data marshalling: `boopickle`
 
 # Going further
 
