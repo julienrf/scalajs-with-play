@@ -39,6 +39,7 @@ case "$1" in
         ;;
     publish)
         build
+        cp -R images/ ~/sites/julienrf.github.com/2017/scalajs-with-play/
         cp $OUT ~/sites/julienrf.github.com/2017/scalajs-with-play/
         ;;
     stop-server)
