@@ -3,6 +3,7 @@ package counter
 import autowire.Core.Request
 import play.api.mvc.{Action, Controller}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.libs.json.Json
 import play.twirl.api.{Html, HtmlFormat}
 
 class CounterCtl extends Controller {
@@ -25,6 +26,14 @@ class CounterCtl extends Controller {
         Html("\"></script></head><body></body></html>")
       ))
     Ok(html)
+  }
+
+  val increment = Action(parse.json) { request =>
+    request.body.validate[Int]
+      .fold(
+        _ => BadRequest,
+        step => Ok(Json.toJson(Service.increment(step)))
+      )
   }
 
   def service(path: String) = Action.async(parse.text) { request =>

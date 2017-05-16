@@ -944,14 +944,14 @@ No! A lot of Scala.js libraries are published, defining facades for you.
 * [`monadic-html`](https://github.com/OlivierBlanvillain/monadic-html)
 * A Scala.js library (written in Scala) for simple, precise data-binding
 
-### Core concept: `Rx[A]`
+### Core concept: `Rx[A]` {.unnumbered}
 
 * `Rx[A]` is a value of type `A` that can change over time
 * It can be seen as a *stream* of values where new values come in as time passes
 
 <p>![rx-basic](images/rx-basic.svg)</p>
 
-### Transforming `Rx[A]` using `map`
+### Transforming `Rx[A]` using `map` {.unnumbered}
 
 * We can *transform* an `Rx[A]` into an `Rx[B]` using `map`
 * Similar to `List.map`, except we have to think about it in terms of time
@@ -964,7 +964,7 @@ val z = y.map(a => a.toString)
 
 <p>![](images/rx-map.svg)</p>
 
-### Dropping values
+### Dropping values {.unnumbered}
 
 * We can *drop* (or filter out) values we are not interested in using `dropIf`
 * Similar to `List.filterNot`
@@ -978,7 +978,7 @@ val y = x.dropIf(a => a % 2 == 0)(1) // 1 is the default value
 
 `keepIf` is similar but keeps values satisfying the predicate
 
-### Dropping values
+### Dropping values {.unnumbered}
 
 * We can *merge* two `Rx`es into one using `merge`
 * Updates of both inputs are seen as updates of the output
@@ -991,7 +991,7 @@ val z = x.merge(y)
 
 <p>![](images/rx-merge.svg)</p>
 
-### Other operations
+### Other operations {.unnumbered}
 
 There are several other operations [documented here](https://github.com/OlivierBlanvillain/monadic-html#frp-ish-apis):
 
@@ -999,7 +999,7 @@ There are several other operations [documented here](https://github.com/OlivierB
 * `dropRepeats`
 * etc.
 
-### The source of `Rx`es: `Var[A]`
+### The source of `Rx`es: `Var[A]` {.unnumbered}
 
 * A `Var[A]` is an `Rx[A]` that we can directly mutate, creating a *source* stream
 * Its API is defined as:
@@ -1013,7 +1013,7 @@ class Var[A](initialValue: A) extends Rx[A] {
 
 `:=` does not really "destroy" the old value; it adds a new value to the timeline.
 
-### The source of `Rx`es: `Var[A]` (2)
+### The source of `Rx`es: `Var[A]` (2) {.unnumbered}
 
 ~~~ scala
 val x: Var[Int] = Var(4)
@@ -1028,7 +1028,7 @@ creates the original `Rx`
 
 <p>![rx-basic](images/rx-basic.svg)</p>
 
-### `Rx`es, `Var`s and monadic-html
+### `Rx`es, `Var`s and monadic-html {.unnumbered}
 
 * monadic-html allows you to write XML literals representing DOM elements
 * Dynamic parts can be filled in with `Rx`es
@@ -1050,7 +1050,7 @@ val div = dom.document.createElement("div")
 mount(div, component)
 ~~~
 
-### The counter app with monadic-html
+### The counter app with monadic-html {.unnumbered}
 
 ~~~ scala
 object Main extends js.JSApp {
@@ -1122,25 +1122,308 @@ Useful links
 
 # Play with Scala.js
 
-
 ## Setup
+
+### Sbt setup {.unnumbered}
+
+![](images/sbt-setup-spa.svg)
+
+### Sbt setup (plugins) {.unnumbered}
+
+`project/plugins.sbt`:
+
+~~~ scala
+// Play dependencies and hot reloading
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.14")
+
+// Scala.js
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.16")
+
+// Scala.js integration with Play
+addSbtPlugin("com.vmunier" % "sbt-web-scalajs" % "1.0.4")
+~~~
+
+### Sbt setup (shared project) {.unnumbered}
+
+`build.sbt`:
+
+~~~ scala
+val shared =
+  crossProject
+    .crossType(CrossType.Pure)
+    .settings(…)
+
+val sharedJS = shared.js
+val sharedJVM = shared.jvm
+~~~
+
+### Sbt setup (client project) {.unnumbered}
+
+`build.sbt`:
+
+~~~ scala
+val client =
+  project
+    .dependsOn(sharedJS)
+    .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
+    .settings(…)
+~~~
+
+### Sbt setup (server project) {.unnumbered}
+
+`build.sbt`:
+
+~~~ scala
+val server =
+  project
+    .dependsOn(sharedJVM)
+    .enablePlugins(PlayScala)
+    .settings(
+      scalaJSProjects := Seq(client),
+      pipelineStages in Assets := Seq(scalaJSPipeline),
+      …
+    )
+~~~
 
 ## Architecture of a web app
 
+### Architecture of a web app {.unnumbered}
+
+![](images/spa-architecture.svg)
+
 ## Remote invocations
 
-### Manual way {.unnumbered}
+### Manual way (server-side) {.unnumbered}
 
+`conf/routes`:
 
+~~~
+POST   /inc           counter.CounterCtl.increment
+~~~
+
+`app/counter/CounterCtl`:
+
+~~~ scala
+val increment = Action(parse.json) { request =>
+  request.body.validate[Int]
+    .fold(
+      _ => BadRequest,
+      step => Ok(Json.toJson(Service.increment(step)))
+    )
+}
+~~~
+
+### Manual way (client-side) {.unnumbered}
+
+~~~ scala
+val counter = Var(0)
+
+def onIncrement(): Unit =
+  dom.ext.Ajax.post(
+    url = "/inc",
+    data = JSON.stringify(1),
+    headers = Map("Content-Type" -> "application/json")
+  ).foreach { xhr =>
+    if (xhr.status == 200) {
+      val x = JSON.parse(xhr.responseText).asInstanceOf[Int]
+      counter := x
+    }
+  }
+
+<div style="text-align: center">
+  <h1>{ counter }</h1>
+  <button id="inc" onclick={ onIncrement _ }>Increment</button>
+</div>
+~~~
+
+### Manual way: summary {.unnumbered}
+
+- On server side, we have to create an HTTP endpoint corresponding to each user action
+- On client side, we have to forge the correct URL for each endpoint we want to invoke
+- On both sides, we have to consistently serialize and deserialize data
+
+### Autowire {.unnumbered}
+
+- Remote invokation automation
+- All client / server communications go through a single HTTP endpoint
+- Autowire takes care of forging the URL corresponding to the endpoint to invoke
+- Data marshalling is configurable
+
+### Autowire + BooPickle architecture {.unnumbered}
+
+![](images/sbt-setup-autowire.svg)
+
+### Sbt setup {.unnumbered}
+
+`build.sbt`:
+
+~~~ scala
+val shared =
+  crossProject
+    .crossType(CrossType.Pure)
+    .settings(
+      libraryDependencies ++= Seq(
+        "com.lihaoyi" %%% "autowire" % "0.2.6",
+        "io.suzaku" %%% "boopickle" % "1.2.6"
+      )
+    )
+~~~
+
+### Shared service interface {.unnumbered}
+
+`counter/ServiceDef.scala`:
+
+~~~ scala
+trait ServiceDef {
+
+  def get(): Int
+
+  def increment(step: Int): Int
+
+  def reset(): Int
+
+}
+~~~
+
+### Service implementation {.unnumbered}
+
+`app/counter/Service.scala`:
+
+~~~ scala
+import scala.concurrent.stm.Ref
+
+object Service extends ServiceDef {
+
+  private val value = Ref(0)
+
+  def get(): Int = value.single.get
+
+  def increment(step: Int): Int = value.single.transformAndGet(_ + step)
+
+  def reset(): Int = value.single.transformAndGet(_ => 0)
+
+}
+~~~
+
+### Autowired server {.unnumbered}
+
+`app/counter/Server.scala`:
+
+~~~ scala
+import boopickle.Default._
+
+object Server extends autowire.Server[ByteBuffer, Pickler, Pickler] {
+  override def read[R: Pickler](p: ByteBuffer) = Unpickle[R].fromBytes(p)
+  override def write[R: Pickler](r: R) = Pickle.intoBytes(r)
+
+  val routes: Server.Router = route[ServiceDef](Service)
+}
+~~~
+
+### HTTP endpoint implementation {.unnumbered}
+
+`conf/routes`:
+
+~~~
+POST   /service/*path      counter.CounterCtl.service(path)
+~~~
+
+`app/counter/CounterCtl.scala`:
+
+~~~ scala
+def service(path: String) = Action.async(parse.raw) { request =>
+  // get the request body as ByteString
+  val b = request.body.asBytes(parse.UNLIMITED).get
+
+  // call Autowire route
+  Server.routes(
+    autowire.Core.Request(path.split("/"),
+      Unpickle[Map[String, ByteBuffer]].fromBytes(b.asByteBuffer))
+  ).map { buffer =>
+    val data = Array.ofDim[Byte](buffer.remaining())
+    buffer.get(data)
+    Ok(data)
+  }
+}
+~~~
+
+### Client {.unnumbered}
+
+`counter/Client.scala`:
+
+~~~ scala
+import boopickle.Default._
+
+object Client extends autowire.Client[ByteBuffer, Pickler, Pickler] {
+
+  override def doCall(req: Request): Future[ByteBuffer] = {
+    dom.ext.Ajax.post(
+      url = "/service/" + req.path.mkString("/"),
+      data = Pickle.intoBytes(req.args),
+      responseType = "arraybuffer",
+      headers = Map("Content-Type" -> "application/octet-stream")
+    ).map { r =>
+      TypedArrayBuffer.wrap(r.response.asInstanceOf[ArrayBuffer])
+    }
+  }
+
+  override def read[Result: Pickler](p: ByteBuffer) = Unpickle[Result].fromBytes(p)
+  override def write[Result: Pickler](r: Result) = Pickle.intoBytes(r)
+
+}
+~~~
+
+### Client usage {.unnumbered}
+
+`counter/Main.scala`:
+
+~~~ scala
+val client = Client[ServiceDef]
+
+val eventuallyInitValue = client.get().call()
+~~~
+
+### Client usage {.unnumbered}
+
+`counter/Main.scala`:
+
+~~~ scala
+val client = Client[ServiceDef]
+
+val eventuallyInitValue: Future[Int] = client.get().call()
+~~~
+
+### (Almost) complete client {.unnumbered}
+
+~~~ scala
+val counter = Var(initValue)
+var step = 1
+
+def onIncrement(): Unit =
+  client.increment(step).call().foreach(x => counter := x)
+
+def onReset(): Unit =
+  client.reset().call().foreach(x => counter := x)
+
+def onChangeStep(event: Event): Unit = {
+  step = event.target.asInstanceOf[Input].value.toInt
+}
+
+<div style="text-align: center">
+  <h1 id="counter">{ counter }</h1>
+  <h1><input type="number" value={ step.toString } onchange={ onChangeStep _ } /></h1>
+  <div>
+    <button id="inc" onclick={ onIncrement _ }>Increment</button>
+    <button id="reset" onclick={ onReset _ }>Reset</button>
+  </div>
+</div>
+~~~
 
 # Summary
 
 
+
 # Going further
-
-### Scala.js + React {.unnumbered}
-
-- scalajs-react
 
 ### NPM modules {.unnumbered}
 
@@ -1158,6 +1441,10 @@ npmDependencies in Compile += "react" -> "15.5.4"
 ~~~
 > myProject/fullOptJS::webpack
 ~~~
+
+### Scala.js + React {.unnumbered}
+
+- scalajs-react
 
 ### Alternative Web frameworks {.unnumbered}
 

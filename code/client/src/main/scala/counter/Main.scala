@@ -7,7 +7,7 @@ import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-import scala.scalajs.js.JSApp
+import scala.scalajs.js.{JSApp, JSON}
 import scala.util.{Failure, Success}
 
 object Main extends JSApp {
@@ -25,7 +25,17 @@ object Main extends JSApp {
           var step = 1
 
           def onIncrement(): Unit = {
-            client.increment(step).call().foreach(x => counter := x)
+            dom.ext.Ajax.post(
+              url = "/inc",
+              data = step.toString,
+              headers = Map("Content-Type" -> "application/json")
+            ).foreach { xhr =>
+              if (xhr.status == 200) {
+                val x = JSON.parse(xhr.responseText).asInstanceOf[Int]
+                counter := x
+              }
+            }
+//            client.increment(step).call().foreach(x => counter := x)
           }
 
           def onReset(): Unit = {
